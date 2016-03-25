@@ -836,7 +836,6 @@ public class Camera2BasicFragment extends Fragment
                                                @NonNull TotalCaptureResult result) {
                     showToast("Saved: " + mFile);
                     Log.d(TAG, mFile.toString());
-                    EventBus.getDefault().post(new OnPictureTakenEvent(mFile));
                     unlockFocus();
                 }
             };
@@ -927,6 +926,7 @@ public class Camera2BasicFragment extends Fragment
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
+                EventBus.getDefault().post(new OnPictureTakenEvent(mFile));
                 mImage.close();
                 if (null != output) {
                     try {
