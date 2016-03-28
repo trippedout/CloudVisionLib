@@ -1,10 +1,7 @@
 package net.trippedout.cloudvisiondemo;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 
 import com.example.android.camera2basic.Camera2BasicFragment;
@@ -18,8 +15,6 @@ import net.trippedout.cloudvisionlib.VisionCallback;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import java.io.ByteArrayOutputStream;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
