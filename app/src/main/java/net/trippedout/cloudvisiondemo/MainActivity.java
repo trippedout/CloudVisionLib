@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 
 import net.trippedout.cloudvisionlib.CloudVisionApi;
 import net.trippedout.cloudvisionlib.CloudVisionService;
+import net.trippedout.cloudvisionlib.ImageUtil;
 import net.trippedout.cloudvisionlib.VisionCallback;
 
 import org.greenrobot.eventbus.EventBus;
@@ -85,14 +86,7 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void onEvent(Camera2BasicFragment.OnPictureTakenEvent event) {
 
-        // half image size just to save space on bytearray post
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 2;
-
-        Bitmap bitmap = BitmapFactory.decodeFile(event.getFile().getPath(), options);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        String encodedImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+        String encodedImage = ImageUtil.getEncodedImageData(event.getFile().getPath());
 
         // We can use a very basic callback wrapper to just get the data we need and handle error responses automatically
         mVisionService.getAnnotations(Secret.API_KEY, CloudVisionApi.getTestRequestAllFeatures(encodedImage))
