@@ -9,6 +9,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
+import net.trippedout.cloudvisiondemo.api.FacesFeature;
 import net.trippedout.cloudvisiondemo.api.ImagePropsFeature;
 import net.trippedout.cloudvisiondemo.api.LabelFeature;
 
@@ -40,31 +41,6 @@ public class CloudVisionApi {
                     "requests=" + requests +
                     '}';
         }
-    }
-
-    /**
-     * Returns a simple VisionRequest dealing with label detection
-     */
-    public static VisionRequest getTestRequest(String base64Image) {
-        List<CloudVisionApi.Request> list = new ArrayList<>();
-        list.add(
-                new Request(
-                    new Image(base64Image),
-                    Arrays.asList(new CloudVisionApi.Feature(FEATURE_TYPE_LABEL_DETECTION, DEFAULT_MAX_RESULTS))
-                )
-        );
-        return new VisionRequest(list);
-    }
-
-    public static VisionRequest getTestRequestAllFeatures(String base64Image) {
-        List<CloudVisionApi.Request> list = new ArrayList<>();
-        list.add(
-                new Request(
-                        new Image(base64Image),
-                        ALL_FEATURES
-                )
-        );
-        return new VisionRequest(list);
     }
 
     public static class Request {
@@ -146,6 +122,32 @@ public class CloudVisionApi {
         ALL_FEATURES.add(6, new Feature(FEATURE_TYPE_TEXT_DETECTION, DEFAULT_MAX_RESULTS));
     }
 
+
+    /**
+     * Returns a simple VisionRequest dealing with label detection
+     */
+    public static VisionRequest getTestRequest(String base64Image) {
+        List<CloudVisionApi.Request> list = new ArrayList<>();
+        list.add(
+                new Request(
+                        new Image(base64Image),
+                        Arrays.asList(new CloudVisionApi.Feature(FEATURE_TYPE_LABEL_DETECTION, DEFAULT_MAX_RESULTS))
+                )
+        );
+        return new VisionRequest(list);
+    }
+
+    public static VisionRequest getTestRequestAllFeatures(String base64Image) {
+        List<CloudVisionApi.Request> list = new ArrayList<>();
+        list.add(
+                new Request(
+                        new Image(base64Image),
+                        ALL_FEATURES
+                )
+        );
+        return new VisionRequest(list);
+    }
+
     /**
      * Base class for the responses we expect back from the Vision API service.
      */
@@ -166,6 +168,22 @@ public class CloudVisionApi {
                     '}';
         }
     }
+
+    /**
+     * Base class that all possible feature responses extend from. It's empty but its mainly for our deserializer to
+     * make our lives easier.
+     */
+    public static class Response {
+
+    }
+
+    /**
+     * Base class for the ease of use in our deserializer
+     */
+    public static class ResponseList extends ArrayList<Response> {
+
+    }
+
 
     /**
      * The information returned by the Vision API is structured slightly awkward, so we needed to create
@@ -209,20 +227,6 @@ public class CloudVisionApi {
         }
     }
 
-    /**
-     * Base class that all possible feature responses extend from. It's empty but its mainly for our deserializer to
-     * make our lives easier.
-     */
-    public static class Response {
-
-    }
-
-    /**
-     * Base class for the ease of use in our deserializer
-     */
-    public static class ResponseList extends ArrayList<Response> {
-
-    }
 
     /**
      * labelAnnotations as a part of a response from {@link #FEATURE_TYPE_LABEL_DETECTION}
@@ -260,10 +264,13 @@ public class CloudVisionApi {
         }
     }
 
+    /**
+     * faceAnnotations as part of a response from {@link #FEATURE_TYPE_FACE_DETECTION}
+     */
     public static class FaceDetectResponse extends Response {
-        public final List<FaceAnnotations> faceAnnotations;
+        public final List<FacesFeature.FaceAnnotations> faceAnnotations;
 
-        public FaceDetectResponse(List<FaceAnnotations> faceAnnotations) {
+        public FaceDetectResponse(List<FacesFeature.FaceAnnotations> faceAnnotations) {
             this.faceAnnotations = faceAnnotations;
         }
 
@@ -275,133 +282,8 @@ public class CloudVisionApi {
         }
     }
 
-    public static class FaceAnnotations {
-        public final BoundingPoly boundingPoly;
-        public final BoundingPoly fdBoundingPoly;
-        public final List<Landmark> landmarks;
-        public final float rollAngle;
-        public final float panAngle;
-        public final float tiltAngle;
-        public final float detectionConfidence;
-        public final float landmarkingConfidence;
-        public final String joyLikelihood;
-        public final String sorrowLikelihood;
-        public final String angerLikelihood;
-        public final String surpriseLikelihood;
-        public final String underExposedLikelihood;
-        public final String blurredLikelihood;
-        public final String headwearLikelihood;
 
-        public FaceAnnotations(BoundingPoly boundingPoly, BoundingPoly fdBoundingPoly, List<Landmark> landmarks,
-                                  float rollAngle, float panAngle, float tiltAngle, float detectionConfidence, float landmarkingConfidence,
-                                  String joyLikelihood, String sorrowLikelihood, String angerLikelihood,
-                                  String surpriseLikelihood, String underExposedLikelihood,
-                                  String blurredLikelihood, String headwearLikelihood) {
-            this.boundingPoly = boundingPoly;
-            this.fdBoundingPoly = fdBoundingPoly;
-            this.landmarks = landmarks;
-            this.rollAngle = rollAngle;
-            this.panAngle = panAngle;
-            this.tiltAngle = tiltAngle;
-            this.detectionConfidence = detectionConfidence;
-            this.landmarkingConfidence = landmarkingConfidence;
-            this.joyLikelihood = joyLikelihood;
-            this.sorrowLikelihood = sorrowLikelihood;
-            this.angerLikelihood = angerLikelihood;
-            this.surpriseLikelihood = surpriseLikelihood;
-            this.underExposedLikelihood = underExposedLikelihood;
-            this.blurredLikelihood = blurredLikelihood;
-            this.headwearLikelihood = headwearLikelihood;
-        }
 
-        @Override
-        public String toString() {
-            return "FaceAnnotations{" +
-                    "boundingPoly=" + boundingPoly +
-                    ", fdBoundingPoly=" + fdBoundingPoly +
-                    ", landmarks=" + landmarks +
-                    ", rollAngle=" + rollAngle +
-                    ", panAngle=" + panAngle +
-                    ", tiltAngle=" + tiltAngle +
-                    ", detectionConfidence=" + detectionConfidence +
-                    ", landmarkingConfidence=" + landmarkingConfidence +
-                    ", joyLikelihood='" + joyLikelihood + '\'' +
-                    ", sorrowLikelihood='" + sorrowLikelihood + '\'' +
-                    ", angerLikelihood='" + angerLikelihood + '\'' +
-                    ", surpriseLikelihood='" + surpriseLikelihood + '\'' +
-                    ", underExposedLikelihood='" + underExposedLikelihood + '\'' +
-                    ", blurredLikelihood='" + blurredLikelihood + '\'' +
-                    ", headwearLikelihood='" + headwearLikelihood + '\'' +
-                    '}';
-        }
-    }
-
-    public static class BoundingPoly {
-        public final List<Vertex> vertices;
-
-        public BoundingPoly(List<Vertex> vertices) {
-            this.vertices = vertices;
-        }
-
-        @Override
-        public String toString() {
-            return "BoundingPoly{" +
-                    "vertices=" + vertices +
-                    '}';
-        }
-    }
-
-    public static class Vertex {
-        public final float x;
-        public final float y;
-
-        public Vertex(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        @Override
-        public String toString() {
-            return "Vertex{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    '}';
-        }
-    }
-
-    public static class Landmark {
-        public final String type;
-        public final Position position;
-
-        public Landmark(String type, Position position) {
-            this.type = type;
-            this.position = position;
-        }
-
-        @Override
-        public String toString() {
-            return "Landmark{" +
-                    "type='" + type + '\'' +
-                    ", position=" + position +
-                    '}';
-        }
-    }
-
-    public static class Position extends Vertex {
-        public final float z;
-
-        public Position(float x, float y, float z) {
-            super(x, y);
-            this.z = z;
-        }
-    }
-
-    public static String LIKELIHOOD_UNKNOWN         = "UNKNOWN";
-    public static String LIKELIHOOD_VERY_UNLIKELY   = "VERY_UNLIKELY";
-    public static String LIKELIHOOD_UNLIKELY        = "UNLIKELY";
-    public static String LIKELIHOOD_POSSIBLE        = "POSSIBLE";
-    public static String LIKELIHOOD_LIKELY          = "LIKELY";
-    public static String LIKELIHOOD_VERY_LIKELY     = "VERY_LIKELY";
 
     /**
      * Error class for handling statuses that fail
