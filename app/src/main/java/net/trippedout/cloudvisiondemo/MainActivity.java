@@ -11,6 +11,9 @@ import com.example.android.camera2basic.Camera2BasicFragment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.trippedout.cloudvisionlib.CloudVisionApi;
+import net.trippedout.cloudvisionlib.CloudVisionService;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -87,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
         options.inSampleSize = 2;
 
         Bitmap bitmap = BitmapFactory.decodeFile(event.getFile().getPath(), options);
-        Log.d(TAG, "bitmap: " + bitmap.getWidth() + ", " + bitmap.getHeight());
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         String encodedImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);

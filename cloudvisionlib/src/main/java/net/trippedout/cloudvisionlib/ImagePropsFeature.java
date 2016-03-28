@@ -1,4 +1,4 @@
-package net.trippedout.cloudvisiondemo.api;
+package net.trippedout.cloudvisionlib;
 
 import java.util.List;
 

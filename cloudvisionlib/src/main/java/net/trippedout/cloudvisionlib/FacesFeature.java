@@ -1,9 +1,9 @@
-package net.trippedout.cloudvisiondemo.api;
+package net.trippedout.cloudvisionlib;
 
 import java.util.List;
 
 /**
- * Created by atripaldi on 3/28/16.
+ * https://cloud.google.com/vision/reference/rest/v1/images/annotate#FaceAnnotation
  */
 public class FacesFeature {
     public static class FaceAnnotations {

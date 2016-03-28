@@ -1,4 +1,4 @@
-package net.trippedout.cloudvisiondemo;
+package net.trippedout.cloudvisionlib;
 
 import android.util.Log;
 
@@ -9,24 +9,25 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-import net.trippedout.cloudvisiondemo.api.FacesFeature;
-import net.trippedout.cloudvisiondemo.api.ImagePropsFeature;
-import net.trippedout.cloudvisiondemo.api.LabelFeature;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * (Almost) All of the POJOs needed for GSON requests and responses via Retrofit.
+ * Contains all the Request and Response classes necessary for making calls to the Cloud Vision API.
  *
  * See the documentation at https://cloud.google.com/vision/reference/rest/v1/images/annotate
  */
 public class CloudVisionApi {
 
     /**
-     * Main request for all Vision related APIs, typically handled by helper methods below
+     * Main request for all Vision related APIs.
+     *
+     * You can pass along as many requests as needed, each {@link Request} contains a single image.
+     *
+     * Refer to {@link #getTestRequest(String)} and {@link #getTestRequestAllFeatures(String)}
+     * for implementation details.
      */
     public static class VisionRequest {
         public final List<Request> requests;
@@ -43,6 +44,13 @@ public class CloudVisionApi {
         }
     }
 
+    /**
+     * An individual request. Each Request is loaded with a single image, but can be given
+     * as many {@link Feature}s as necessary.
+     *
+     * Refer to {@link #getTestRequest(String)} and {@link #getTestRequestAllFeatures(String)}
+     * for implementation details.
+     */
     public static class Request {
         public final Image image;
         public final List<Feature> features;
@@ -61,6 +69,17 @@ public class CloudVisionApi {
         }
     }
 
+    /**
+     * A single images content, which is {@link android.util.Base64} encoded data.
+     * <p>
+     * <code>
+     *   Bitmap bitmap = BitmapFactory.decodeFile("imagePath|resId", options);
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+         String content = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+     * </code>
+     * </p>
+     */
     public static class Image {
         public final String content;
 
@@ -170,10 +189,143 @@ public class CloudVisionApi {
     }
 
     /**
+     * labelAnnotations as a part of a response from {@link #FEATURE_TYPE_LABEL_DETECTION}
+     */
+    public static class LabelResponse extends Response {
+        public final List<Shared.EntityAnnotation> labelAnnotations;
+
+        public LabelResponse(List<Shared.EntityAnnotation> labelAnnotations) {
+            this.labelAnnotations = labelAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "LabelResponse{" +
+                    "labelAnnotations=" + labelAnnotations +
+                    '}';
+        }
+    }
+
+    /**
+     * landmarkAnnotations as a part of a response from {@link #FEATURE_TYPE_LANDMARK_DETECTION}
+     */
+    public static class LandmarkResponse extends Response {
+        public final List<Shared.EntityAnnotation> landmarkAnnotations;
+
+        public LandmarkResponse(List<Shared.EntityAnnotation> landmarkAnnotations) {
+            this.landmarkAnnotations = landmarkAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "LandmarkResponse{" +
+                    "landmarkAnnotations=" + landmarkAnnotations +
+                    '}';
+        }
+    }
+
+    /**
+     * logoAnnotations as a part of a response from {@link #FEATURE_TYPE_LOGO_DETECTION}
+     */
+    public static class LogoResponse extends Response {
+        public final List<Shared.EntityAnnotation> logoAnnotations;
+
+        public LogoResponse(List<Shared.EntityAnnotation> logoAnnotations) {
+            this.logoAnnotations = logoAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "LogoResponse{" +
+                    "logoAnnotations=" + logoAnnotations +
+                    '}';
+        }
+    }
+
+    /**
+     * textAnnotations as a part of a response from {@link #FEATURE_TYPE_TEXT_DETECTION}
+     */
+    public static class TextResponse extends Response {
+        public final List<Shared.EntityAnnotation> textAnnotations;
+
+        public TextResponse(List<Shared.EntityAnnotation> textAnnotations) {
+            this.textAnnotations = textAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "TextResponse{" +
+                    "textAnnotations=" + textAnnotations +
+                    '}';
+        }
+    }
+
+    /**
+     * imagePropertiesAnnotation as part of a response from {@link #FEATURE_TYPE_IMAGE_PROPERTIES}
+     */
+    public static class ImagePropsResponse extends Response {
+        public final ImagePropsFeature.ImagePropsAnnotation imagePropertiesAnnotation;
+
+        public ImagePropsResponse(ImagePropsFeature.ImagePropsAnnotation imagePropertiesAnnotation) {
+            this.imagePropertiesAnnotation = imagePropertiesAnnotation;
+        }
+
+        @Override
+        public String toString() {
+            return "ImagePropsResponse{" +
+                    "imagePropertiesAnnotation=" + imagePropertiesAnnotation +
+                    '}';
+        }
+    }
+
+    /**
+     * faceAnnotations as part of a response from {@link #FEATURE_TYPE_FACE_DETECTION}
+     */
+    public static class FaceDetectResponse extends Response {
+        public final List<FacesFeature.FaceAnnotations> faceAnnotations;
+
+        public FaceDetectResponse(List<FacesFeature.FaceAnnotations> faceAnnotations) {
+            this.faceAnnotations = faceAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "FaceDetectResponse{" +
+                    "faceAnnotations=" + faceAnnotations +
+                    '}';
+        }
+    }
+
+    /**
+     * Error class for handling statuses that fail
+     */
+    public static class Error {
+        public final int code;
+        public final String message;
+        public final String status;
+
+        public Error(int code, String message, String status) {
+            this.code = code;
+            this.message = message;
+            this.status = status;
+        }
+
+        @Override
+        public String toString() {
+            return "Error{" +
+                    "code=" + code +
+                    ", message='" + message + '\'' +
+                    ", status='" + status + '\'' +
+                    '}';
+        }
+    }
+
+
+    /**
      * Base class that all possible feature responses extend from. It's empty but its mainly for our deserializer to
      * make our lives easier.
      */
-    public static class Response {
+    protected static class Response {
 
     }
 
@@ -224,88 +376,6 @@ public class CloudVisionApi {
             }
 
             return list;
-        }
-    }
-
-
-    /**
-     * labelAnnotations as a part of a response from {@link #FEATURE_TYPE_LABEL_DETECTION}
-     */
-    public static class LabelResponse extends Response {
-        public final List<LabelFeature.LabelAnnotation> labelAnnotations;
-
-        public LabelResponse(List<LabelFeature.LabelAnnotation> labelAnnotations) {
-            this.labelAnnotations = labelAnnotations;
-        }
-
-        @Override
-        public String toString() {
-            return "LabelResponse{" +
-                    "labelAnnotations=" + labelAnnotations +
-                    '}';
-        }
-    }
-
-    /**
-     * imagePropertiesAnnotation as part of a response from {@link #FEATURE_TYPE_IMAGE_PROPERTIES}
-     */
-    public static class ImagePropsResponse extends Response {
-        public final ImagePropsFeature.ImagePropsAnnotation imagePropertiesAnnotation;
-
-        public ImagePropsResponse(ImagePropsFeature.ImagePropsAnnotation imagePropertiesAnnotation) {
-            this.imagePropertiesAnnotation = imagePropertiesAnnotation;
-        }
-
-        @Override
-        public String toString() {
-            return "ImagePropsResponse{" +
-                    "imagePropertiesAnnotation=" + imagePropertiesAnnotation +
-                    '}';
-        }
-    }
-
-    /**
-     * faceAnnotations as part of a response from {@link #FEATURE_TYPE_FACE_DETECTION}
-     */
-    public static class FaceDetectResponse extends Response {
-        public final List<FacesFeature.FaceAnnotations> faceAnnotations;
-
-        public FaceDetectResponse(List<FacesFeature.FaceAnnotations> faceAnnotations) {
-            this.faceAnnotations = faceAnnotations;
-        }
-
-        @Override
-        public String toString() {
-            return "FaceDetectResponse{" +
-                    "faceAnnotations=" + faceAnnotations +
-                    '}';
-        }
-    }
-
-
-
-
-    /**
-     * Error class for handling statuses that fail
-     */
-    public static class Error {
-        public final int code;
-        public final String message;
-        public final String status;
-
-        public Error(int code, String message, String status) {
-            this.code = code;
-            this.message = message;
-            this.status = status;
-        }
-
-        @Override
-        public String toString() {
-            return "Error{" +
-                    "code=" + code +
-                    ", message='" + message + '\'' +
-                    ", status='" + status + '\'' +
-                    '}';
         }
     }
 }

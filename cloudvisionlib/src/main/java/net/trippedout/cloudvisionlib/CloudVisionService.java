@@ -1,4 +1,4 @@
-package net.trippedout.cloudvisiondemo;
+package net.trippedout.cloudvisionlib;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -16,5 +16,4 @@ public interface CloudVisionService {
     })
     @POST("v1/images:annotate")
     Call<CloudVisionApi.VisionResponse> getAnnotations(@Query("key") String apiKey, @Body CloudVisionApi.VisionRequest request);
-
 }

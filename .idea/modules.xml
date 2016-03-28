@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CloudVisionDemo.iml" filepath="$PROJECT_DIR$/CloudVisionDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cloudvisionlib/cloudvisionlib.iml" filepath="$PROJECT_DIR$/cloudvisionlib/cloudvisionlib.iml" />
     </modules>
   </component>
 </project>
