@@ -7,18 +7,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import net.trippedout.cloudvisiondemo.api.ImagePropsFeature;
 import net.trippedout.cloudvisiondemo.api.LabelFeature;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,6 +167,10 @@ public class CloudVisionApi {
         }
     }
 
+    /**
+     * The information returned by the Vision API is structured slightly awkward, so we needed to create
+     * a custom Deserializer to handle this input
+     */
     public static class ResponseDeserializer implements JsonDeserializer<ResponseList> {
         private static final String TAG = ResponseDeserializer.class.getSimpleName();
 
@@ -190,13 +187,19 @@ public class CloudVisionApi {
                 JsonElement responses = jsonArray.get(i);
 
                 LabelResponse labels = gson.fromJson(responses, LabelResponse.class);
-                if (labels != null) {
+                if (labels != null && labels.labelAnnotations != null) {
                     Log.d(TAG, "add labels: " + labels);
                     list.add(labels);
                 }
 
+                FaceDetectResponse faces = gson.fromJson(responses, FaceDetectResponse.class);
+                if (faces != null && faces.faceAnnotations != null) {
+                    Log.d(TAG, "add faces: " + faces);
+                    list.add(faces);
+                }
+
                 ImagePropsResponse imageProps = gson.fromJson(responses, ImagePropsResponse.class);
-                if (imageProps != null) {
+                if (imageProps != null && imageProps.imagePropertiesAnnotation != null) {
                     Log.d(TAG, "add imageProps: " + imageProps);
                     list.add(imageProps);
                 }
@@ -257,6 +260,152 @@ public class CloudVisionApi {
         }
     }
 
+    public static class FaceDetectResponse extends Response {
+        public final List<FaceAnnotations> faceAnnotations;
+
+        public FaceDetectResponse(List<FaceAnnotations> faceAnnotations) {
+            this.faceAnnotations = faceAnnotations;
+        }
+
+        @Override
+        public String toString() {
+            return "FaceDetectResponse{" +
+                    "faceAnnotations=" + faceAnnotations +
+                    '}';
+        }
+    }
+
+    public static class FaceAnnotations {
+        public final BoundingPoly boundingPoly;
+        public final BoundingPoly fdBoundingPoly;
+        public final List<Landmark> landmarks;
+        public final float rollAngle;
+        public final float panAngle;
+        public final float tiltAngle;
+        public final float detectionConfidence;
+        public final float landmarkingConfidence;
+        public final String joyLikelihood;
+        public final String sorrowLikelihood;
+        public final String angerLikelihood;
+        public final String surpriseLikelihood;
+        public final String underExposedLikelihood;
+        public final String blurredLikelihood;
+        public final String headwearLikelihood;
+
+        public FaceAnnotations(BoundingPoly boundingPoly, BoundingPoly fdBoundingPoly, List<Landmark> landmarks,
+                                  float rollAngle, float panAngle, float tiltAngle, float detectionConfidence, float landmarkingConfidence,
+                                  String joyLikelihood, String sorrowLikelihood, String angerLikelihood,
+                                  String surpriseLikelihood, String underExposedLikelihood,
+                                  String blurredLikelihood, String headwearLikelihood) {
+            this.boundingPoly = boundingPoly;
+            this.fdBoundingPoly = fdBoundingPoly;
+            this.landmarks = landmarks;
+            this.rollAngle = rollAngle;
+            this.panAngle = panAngle;
+            this.tiltAngle = tiltAngle;
+            this.detectionConfidence = detectionConfidence;
+            this.landmarkingConfidence = landmarkingConfidence;
+            this.joyLikelihood = joyLikelihood;
+            this.sorrowLikelihood = sorrowLikelihood;
+            this.angerLikelihood = angerLikelihood;
+            this.surpriseLikelihood = surpriseLikelihood;
+            this.underExposedLikelihood = underExposedLikelihood;
+            this.blurredLikelihood = blurredLikelihood;
+            this.headwearLikelihood = headwearLikelihood;
+        }
+
+        @Override
+        public String toString() {
+            return "FaceAnnotations{" +
+                    "boundingPoly=" + boundingPoly +
+                    ", fdBoundingPoly=" + fdBoundingPoly +
+                    ", landmarks=" + landmarks +
+                    ", rollAngle=" + rollAngle +
+                    ", panAngle=" + panAngle +
+                    ", tiltAngle=" + tiltAngle +
+                    ", detectionConfidence=" + detectionConfidence +
+                    ", landmarkingConfidence=" + landmarkingConfidence +
+                    ", joyLikelihood='" + joyLikelihood + '\'' +
+                    ", sorrowLikelihood='" + sorrowLikelihood + '\'' +
+                    ", angerLikelihood='" + angerLikelihood + '\'' +
+                    ", surpriseLikelihood='" + surpriseLikelihood + '\'' +
+                    ", underExposedLikelihood='" + underExposedLikelihood + '\'' +
+                    ", blurredLikelihood='" + blurredLikelihood + '\'' +
+                    ", headwearLikelihood='" + headwearLikelihood + '\'' +
+                    '}';
+        }
+    }
+
+    public static class BoundingPoly {
+        public final List<Vertex> vertices;
+
+        public BoundingPoly(List<Vertex> vertices) {
+            this.vertices = vertices;
+        }
+
+        @Override
+        public String toString() {
+            return "BoundingPoly{" +
+                    "vertices=" + vertices +
+                    '}';
+        }
+    }
+
+    public static class Vertex {
+        public final float x;
+        public final float y;
+
+        public Vertex(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public String toString() {
+            return "Vertex{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
+    }
+
+    public static class Landmark {
+        public final String type;
+        public final Position position;
+
+        public Landmark(String type, Position position) {
+            this.type = type;
+            this.position = position;
+        }
+
+        @Override
+        public String toString() {
+            return "Landmark{" +
+                    "type='" + type + '\'' +
+                    ", position=" + position +
+                    '}';
+        }
+    }
+
+    public static class Position extends Vertex {
+        public final float z;
+
+        public Position(float x, float y, float z) {
+            super(x, y);
+            this.z = z;
+        }
+    }
+
+    public static String LIKELIHOOD_UNKNOWN         = "UNKNOWN";
+    public static String LIKELIHOOD_VERY_UNLIKELY   = "VERY_UNLIKELY";
+    public static String LIKELIHOOD_UNLIKELY        = "UNLIKELY";
+    public static String LIKELIHOOD_POSSIBLE        = "POSSIBLE";
+    public static String LIKELIHOOD_LIKELY          = "LIKELY";
+    public static String LIKELIHOOD_VERY_LIKELY     = "VERY_LIKELY";
+
+    /**
+     * Error class for handling statuses that fail
+     */
     public static class Error {
         public final int code;
         public final String message;

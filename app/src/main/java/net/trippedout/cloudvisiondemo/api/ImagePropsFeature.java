@@ -3,13 +3,13 @@ package net.trippedout.cloudvisiondemo.api;
 import java.util.List;
 
 /**
- * Created by atripaldi on 3/25/16.
+ * https://cloud.google.com/vision/reference/rest/v1/images/annotate#ImageProperties
  */
 public class ImagePropsFeature {
     public static class ImagePropsAnnotation {
-        public final ColorsArray dominantColors;
+        public final DominantColorsAnnotation dominantColors;
 
-        public ImagePropsAnnotation(ColorsArray dominantColors) {
+        public ImagePropsAnnotation(DominantColorsAnnotation dominantColors) {
             this.dominantColors = dominantColors;
         }
 
@@ -21,10 +21,10 @@ public class ImagePropsFeature {
         }
     }
 
-    public static class ColorsArray {
-        public final List<ColorObject> colors;
+    public static class DominantColorsAnnotation {
+        public final List<ColorInfo> colors;
 
-        public ColorsArray(List<ColorObject> colors) {
+        public DominantColorsAnnotation(List<ColorInfo> colors) {
             this.colors = colors;
         }
 
@@ -36,12 +36,12 @@ public class ImagePropsFeature {
         }
     }
 
-    public static class ColorObject {
+    public static class ColorInfo {
         public final Color color;
         public final float score;
         public final float pixelFraction;
 
-        public ColorObject(Color color, float score, float pixelFraction) {
+        public ColorInfo(Color color, float score, float pixelFraction) {
             this.color = color;
             this.score = score;
             this.pixelFraction = pixelFraction;

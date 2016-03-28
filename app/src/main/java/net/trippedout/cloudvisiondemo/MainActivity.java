@@ -84,10 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
         // half image size just to save space on bytearray post
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = true;
         options.inSampleSize = 2;
 
         Bitmap bitmap = BitmapFactory.decodeFile(event.getFile().getPath(), options);
+        Log.d(TAG, "bitmap: " + bitmap.getWidth() + ", " + bitmap.getHeight());
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         String encodedImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
