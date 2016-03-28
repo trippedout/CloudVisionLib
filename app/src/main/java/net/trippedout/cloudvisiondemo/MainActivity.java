@@ -105,7 +105,10 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<CloudVisionApi.VisionResponse> call, Response<CloudVisionApi.VisionResponse> response) {
                         if (response.isSuccessful()) {
-                            Log.d(TAG, response.body().toString());
+                            // Image props annotation seems to always return something no matter what, so lets trace it out
+                            CloudVisionApi.ImagePropsResponse imageProps
+                                    = (CloudVisionApi.ImagePropsResponse) response.body().getResponseByType(CloudVisionApi.FEATURE_TYPE_IMAGE_PROPERTIES);
+                            Log.d(TAG, imageProps.toString());
                         } else {
                             handleApiError(response);
                         }

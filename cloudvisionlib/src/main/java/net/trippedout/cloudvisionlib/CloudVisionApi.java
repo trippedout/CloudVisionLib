@@ -182,17 +182,17 @@ public class CloudVisionApi {
     public static class VisionResponse {
         private static final String TAG = VisionResponse.class.getSimpleName();
 
-        public final ResponseList responses;
+        private ResponseList responses;
+
+        @Override
+        public String toString() {
+            return "VisionResponse{" +
+                    "mResponseMap=" + getResponseMap() +
+                    "responses=" + responses +
+                    '}';
+        }
 
         private Map<String, Response> mResponseMap;
-
-        public VisionResponse(ResponseList responses) {
-            this.responses = responses;
-
-            Log.d(TAG, "VisionResponse");
-
-            mapResponses();
-        }
 
         private void mapResponses() {
             mResponseMap = new HashMap<>(NUMBER_OF_RESPONSE_TYPES);
@@ -214,11 +214,20 @@ public class CloudVisionApi {
             }
         }
 
-        @Override
-        public String toString() {
-            return "VisionResponse{" +
-                    "mResponseMap=" + mResponseMap +
-                    '}';
+        private Map<String, Response> getResponseMap() {
+            if(mResponseMap == null) {
+                mapResponses();
+            }
+            return mResponseMap;
+        }
+
+        /**
+         * Gets the response for the specified feature type.
+         *
+         * @return a {@link Response} you can cast to the proper type, or null if it doesn't exist.
+         */
+        public Response getResponseByType(String featureType) {
+            return getResponseMap().get(featureType);
         }
     }
 
