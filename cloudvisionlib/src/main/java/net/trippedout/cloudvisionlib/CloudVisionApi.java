@@ -1,5 +1,6 @@
 package net.trippedout.cloudvisionlib;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -12,7 +13,9 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains all the Request and Response classes necessary for making calls to the Cloud Vision API.
@@ -169,24 +172,60 @@ public class CloudVisionApi {
 
     /**
      * Base class for the responses we expect back from the Vision API service.
+     *
+     * Because of a somewhat strange API design, our {@link ResponseList} only returns one object,
+     * which is then further broken up into separate Response objects by key. Our {@link ResponseDeserializer}
+     * handles breaking these in to the proper list, but will need updating if the API changes.
+     *
+     * For now, we map the responses to their proper types for easier access while using this API.
      */
     public static class VisionResponse {
-        public final ResponseList responses;
-        public final Error error;
+        private static final String TAG = VisionResponse.class.getSimpleName();
 
-        public VisionResponse(ResponseList responses, Error error) {
+        public final ResponseList responses;
+
+        private Map<String, Response> mResponseMap;
+
+        public VisionResponse(ResponseList responses) {
             this.responses = responses;
-            this.error = error;
+
+            Log.d(TAG, "VisionResponse");
+
+            mapResponses();
+        }
+
+        private void mapResponses() {
+            mResponseMap = new HashMap<>(NUMBER_OF_RESPONSE_TYPES);
+            for(Response response : responses) {
+                if (response instanceof LabelResponse)
+                    mResponseMap.put(FEATURE_TYPE_LABEL_DETECTION, response);
+                if (response instanceof LandmarkResponse)
+                    mResponseMap.put(FEATURE_TYPE_LANDMARK_DETECTION, response);
+                if (response instanceof LogoResponse)
+                    mResponseMap.put(FEATURE_TYPE_LOGO_DETECTION, response);
+                if (response instanceof TextResponse)
+                    mResponseMap.put(FEATURE_TYPE_TEXT_DETECTION, response);
+                if (response instanceof ImagePropsResponse)
+                    mResponseMap.put(FEATURE_TYPE_IMAGE_PROPERTIES, response);
+                if (response instanceof FaceDetectResponse)
+                    mResponseMap.put(FEATURE_TYPE_FACE_DETECTION, response);
+                if (response instanceof LabelResponse)
+                    mResponseMap.put(FEATURE_TYPE_SAFE_SEARCH_DETECTION, response);
+            }
         }
 
         @Override
         public String toString() {
             return "VisionResponse{" +
-                    "responses=" + responses +
-                    ", error=" + error +
+                    "mResponseMap=" + mResponseMap +
                     '}';
         }
     }
+
+    /**
+     * Static int for the total number of response types below
+     */
+    private static final int NUMBER_OF_RESPONSE_TYPES = 7;
 
     /**
      * labelAnnotations as a part of a response from {@link #FEATURE_TYPE_LABEL_DETECTION}
@@ -296,27 +335,78 @@ public class CloudVisionApi {
         }
     }
 
+    public static class SafeSearchResponse extends Response {
+        public final SafeSearchAnnotation safeSearchAnnotation;
+
+        public SafeSearchResponse(SafeSearchAnnotation safeSearchAnnotation) {
+            this.safeSearchAnnotation = safeSearchAnnotation;
+        }
+
+        @Override
+        public String toString() {
+            return "SafeSearchResponse{" +
+                    "safeSearchAnnotation=" + safeSearchAnnotation +
+                    '}';
+        }
+
+        public String getAdultLikelihood() { return safeSearchAnnotation.adult; }
+        public String getSpoofLikelihood() { return safeSearchAnnotation.spoof; }
+        public String getMedicalLikelihood() { return safeSearchAnnotation.medical; }
+        public String getViolenceLikelihood() { return safeSearchAnnotation.violence; }
+
+        class SafeSearchAnnotation {
+            public final String adult;
+            public final String spoof;
+            public final String medical;
+            public final String violence;
+
+            public SafeSearchAnnotation(String adult, String spoof, String medical, String violence) {
+                this.adult = adult;
+                this.spoof = spoof;
+                this.medical = medical;
+                this.violence = violence;
+            }
+
+            @Override
+            public String toString() {
+                return "SafeSearchAnnotation{" +
+                        "adult='" + adult + '\'' +
+                        ", spoof='" + spoof + '\'' +
+                        ", medical='" + medical + '\'' +
+                        ", violence='" + violence + '\'' +
+                        '}';
+            }
+        }
+    }
+
     /**
      * Error class for handling statuses that fail
      */
     public static class Error {
-        public final int code;
-        public final String message;
-        public final String status;
-
-        public Error(int code, String message, String status) {
-            this.code = code;
-            this.message = message;
-            this.status = status;
+        public final Container error;
+        public Error(Container error) {
+            this.error = error;
         }
 
         @Override
         public String toString() {
             return "Error{" +
-                    "code=" + code +
-                    ", message='" + message + '\'' +
-                    ", status='" + status + '\'' +
+                    "code=" + error.code +
+                    ", message='" + error.message + '\'' +
+                    ", status='" + error.status + '\'' +
                     '}';
+        }
+
+        class Container {
+            public final int code;
+            public final String message;
+            public final String status;
+
+            public Container(int code, String message, String status) {
+                this.code = code;
+                this.message = message;
+                this.status = status;
+            }
         }
     }
 
@@ -356,16 +446,40 @@ public class CloudVisionApi {
                 // just to future proof, gonna treat is as an array and hope for the best
                 JsonElement responses = jsonArray.get(i);
 
+                FaceDetectResponse faces = gson.fromJson(responses, FaceDetectResponse.class);
+                if (faces != null && faces.faceAnnotations != null) {
+                    Log.d(TAG, "add faces: " + faces);
+                    list.add(faces);
+                }
+
+                LandmarkResponse landmarks = gson.fromJson(responses, LandmarkResponse.class);
+                if (landmarks != null && landmarks.landmarkAnnotations != null) {
+                    Log.d(TAG, "add landmarks: " + landmarks);
+                    list.add(landmarks);
+                }
+
+                LogoResponse logos = gson.fromJson(responses, LogoResponse.class);
+                if (logos != null && logos.logoAnnotations != null) {
+                    Log.d(TAG, "add logos: " + logos);
+                    list.add(logos);
+                }
+
                 LabelResponse labels = gson.fromJson(responses, LabelResponse.class);
                 if (labels != null && labels.labelAnnotations != null) {
                     Log.d(TAG, "add labels: " + labels);
                     list.add(labels);
                 }
 
-                FaceDetectResponse faces = gson.fromJson(responses, FaceDetectResponse.class);
-                if (faces != null && faces.faceAnnotations != null) {
-                    Log.d(TAG, "add faces: " + faces);
-                    list.add(faces);
+                TextResponse text = gson.fromJson(responses, TextResponse.class);
+                if (text != null && text.textAnnotations != null) {
+                    Log.d(TAG, "add text: " + text);
+                    list.add(text);
+                }
+
+                SafeSearchResponse safeSearch = gson.fromJson(responses, SafeSearchResponse.class);
+                if (safeSearch != null && safeSearch.safeSearchAnnotation != null) {
+                    Log.d(TAG, "add safeSearch: " + safeSearch);
+                    list.add(safeSearch);
                 }
 
                 ImagePropsResponse imageProps = gson.fromJson(responses, ImagePropsResponse.class);

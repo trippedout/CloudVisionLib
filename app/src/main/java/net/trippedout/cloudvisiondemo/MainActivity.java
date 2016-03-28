@@ -18,11 +18,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Converter;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private Camera2BasicFragment mCameraFragment;
 
+    private Retrofit mRetrofit;
     private CloudVisionService mVisionService;
 
     @Override
@@ -58,16 +63,17 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
                 .registerTypeAdapter(CloudVisionApi.ResponseList.class, new CloudVisionApi.ResponseDeserializer())
                 .create();
 
-        Retrofit retrofit = new Retrofit.Builder()
+        mRetrofit = new Retrofit.Builder()
                 .client(client)
                 .baseUrl("https://vision.googleapis.com")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
-        mVisionService = retrofit.create(CloudVisionService.class);
+        mVisionService = mRetrofit.create(CloudVisionService.class);
     }
 
     @Override
@@ -98,7 +104,11 @@ public class MainActivity extends AppCompatActivity {
                 .enqueue(new Callback<CloudVisionApi.VisionResponse>() {
                     @Override
                     public void onResponse(Call<CloudVisionApi.VisionResponse> call, Response<CloudVisionApi.VisionResponse> response) {
-                        Log.d(TAG, response.body().toString());
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, response.body().toString());
+                        } else {
+                            handleApiError(response);
+                        }
                     }
 
                     @Override
@@ -106,5 +116,18 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "failure: " + t.getMessage());
                     }
         });
+    }
+
+    private void handleApiError(Response<CloudVisionApi.VisionResponse> response) {
+        // Create a converter for our Error class
+        // see https://futurestud.io/blog/retrofit-2-simple-error-handling
+        Converter<ResponseBody, CloudVisionApi.Error> converter
+                = mRetrofit.responseBodyConverter(CloudVisionApi.Error.class, new Annotation[0]);
+        try {
+            CloudVisionApi.Error error = converter.convert(response.errorBody());
+            Log.d(TAG, "onApiError: " + error);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
