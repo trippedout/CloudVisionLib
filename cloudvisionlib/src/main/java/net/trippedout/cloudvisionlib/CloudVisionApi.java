@@ -393,8 +393,9 @@ public class CloudVisionApi {
      */
     public static class Error {
         public final Container error;
-        public Error(Container error) {
-            this.error = error;
+
+        public Error() {
+            this.error = new Container(-1, null, null);
         }
 
         @Override

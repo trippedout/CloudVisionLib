@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 
 import net.trippedout.cloudvisionlib.CloudVisionApi;
 import net.trippedout.cloudvisionlib.CloudVisionService;
+import net.trippedout.cloudvisionlib.VisionCallback;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -100,37 +101,43 @@ public class MainActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         String encodedImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
+        // We can use a very basic callback wrapper to just get the data we need
         mVisionService.getAnnotations(Secret.API_KEY, CloudVisionApi.getTestRequestAllFeatures(encodedImage))
-                .enqueue(new Callback<CloudVisionApi.VisionResponse>() {
+                .enqueue(new VisionCallback(mRetrofit) {
                     @Override
-                    public void onResponse(Call<CloudVisionApi.VisionResponse> call, Response<CloudVisionApi.VisionResponse> response) {
-                        if (response.isSuccessful()) {
-                            // Image props annotation seems to always return something no matter what, so lets trace it out
-                            CloudVisionApi.ImagePropsResponse imageProps
-                                    = (CloudVisionApi.ImagePropsResponse) response.body().getResponseByType(CloudVisionApi.FEATURE_TYPE_IMAGE_PROPERTIES);
-                            Log.d(TAG, imageProps.toString());
-                        } else {
-                            handleApiError(response);
-                        }
+                    public void onApiResponse(CloudVisionApi.VisionResponse response) {
+                        CloudVisionApi.ImagePropsResponse imageProps
+                                = (CloudVisionApi.ImagePropsResponse) response.getResponseByType(CloudVisionApi.FEATURE_TYPE_IMAGE_PROPERTIES);
+                        Log.d(TAG, imageProps.toString());
                     }
 
                     @Override
-                    public void onFailure(Call<CloudVisionApi.VisionResponse> call, Throwable t) {
-                        Log.d(TAG, "failure: " + t.getMessage());
+                    public void onApiError(CloudVisionApi.Error error) {
+                        Log.d(TAG, error.toString());
                     }
-        });
+                });
+
+        // Or of course you could handle it all yourself, like normal Retrofit2 handling:
+
+//        mVisionService.getAnnotations(Secret.API_KEY, CloudVisionApi.getTestRequestAllFeatures(encodedImage))
+//                .enqueue(new Callback<CloudVisionApi.VisionResponse>() {
+//                    @Override
+//                    public void onResponse(Call<CloudVisionApi.VisionResponse> call, Response<CloudVisionApi.VisionResponse> response) {
+//                        if (response.isSuccessful()) {
+//                            // Image props annotation seems to always return something no matter what, so lets trace it out
+//                            CloudVisionApi.ImagePropsResponse imageProps
+//                                    = (CloudVisionApi.ImagePropsResponse) response.body().getResponseByType(CloudVisionApi.FEATURE_TYPE_IMAGE_PROPERTIES);
+//                            Log.d(TAG, imageProps.toString());
+//                        } else {
+//                            handleApiError(response);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<CloudVisionApi.VisionResponse> call, Throwable t) {
+//                        Log.d(TAG, "failure: " + t.getMessage());
+//                    }
+//        });
     }
 
-    private void handleApiError(Response<CloudVisionApi.VisionResponse> response) {
-        // Create a converter for our Error class
-        // see https://futurestud.io/blog/retrofit-2-simple-error-handling
-        Converter<ResponseBody, CloudVisionApi.Error> converter
-                = mRetrofit.responseBodyConverter(CloudVisionApi.Error.class, new Annotation[0]);
-        try {
-            CloudVisionApi.Error error = converter.convert(response.errorBody());
-            Log.d(TAG, "onApiError: " + error);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
