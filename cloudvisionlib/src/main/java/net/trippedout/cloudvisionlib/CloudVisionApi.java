@@ -1,6 +1,5 @@
 package net.trippedout.cloudvisionlib;
 
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.Gson;

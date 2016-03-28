@@ -19,16 +19,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Converter;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -101,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         String encodedImage = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
 
-        // We can use a very basic callback wrapper to just get the data we need
+        // We can use a very basic callback wrapper to just get the data we need and handle error responses automatically
         mVisionService.getAnnotations(Secret.API_KEY, CloudVisionApi.getTestRequestAllFeatures(encodedImage))
                 .enqueue(new VisionCallback(mRetrofit) {
                     @Override
