@@ -5,8 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.example.android.camera2basic.Camera2BasicFragment;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import net.trippedout.cloudvisionlib.CloudVisionApi;
 import net.trippedout.cloudvisionlib.CloudVisionService;
@@ -16,10 +14,7 @@ import net.trippedout.cloudvisionlib.VisionCallback;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -33,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        setupRetrofit();
+        mVisionService = CloudVisionApi.getCloudVisionService();
 
         mCameraFragment = Camera2BasicFragment.newInstance();
 
@@ -42,28 +37,6 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.container, mCameraFragment)
                     .commit();
         }
-    }
-
-    private void setupRetrofit() {
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .build();
-
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(CloudVisionApi.ResponseList.class, new CloudVisionApi.ResponseDeserializer())
-                .create();
-
-        mRetrofit = new Retrofit.Builder()
-                .client(client)
-                .baseUrl("https://vision.googleapis.com")
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
-
-        mVisionService = mRetrofit.create(CloudVisionService.class);
     }
 
     @Override

@@ -3,6 +3,7 @@ package net.trippedout.cloudvisionlib;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 
@@ -12,6 +13,7 @@ import java.io.ByteArrayOutputStream;
  * https://cloud.google.com/vision/reference/rest/v1/images/annotate#Image
  */
 public class ImageUtil {
+    private static final String TAG = ImageUtil.class.getSimpleName();
 
     /**
      * Returns encoded image data for with sample size set to 2 for half the
@@ -30,6 +32,8 @@ public class ImageUtil {
     }
 
     public static String getEncodedImageData(Bitmap bitmap) {
+        Log.d(TAG, "bitmap: " + bitmap.getWidth() + ", " + bitmap.getHeight());
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);

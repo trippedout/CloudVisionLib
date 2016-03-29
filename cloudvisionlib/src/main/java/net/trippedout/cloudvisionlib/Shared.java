@@ -1,5 +1,7 @@
 package net.trippedout.cloudvisionlib;
 
+import android.graphics.Path;
+
 import java.util.List;
 
 /**
@@ -63,6 +65,16 @@ public class Shared {
 
         public BoundingPoly(List<Vertex> vertices) {
             this.vertices = vertices;
+        }
+
+        public Path getPath(float scaleX, float scaleY) {
+            Path path = new Path();
+            path.moveTo(vertices.get(0).x * scaleX, vertices.get(0).y * scaleY);
+            for(int i = 1; i < vertices.size(); i++) {
+                path.lineTo(vertices.get(i).x * scaleX, vertices.get(i).y * scaleY);
+            }
+            path.close();
+            return path;
         }
 
         @Override

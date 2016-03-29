@@ -3,6 +3,7 @@ package net.trippedout.cloudvisionlib;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -16,12 +17,54 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 /**
  * Contains all the Request and Response classes necessary for making calls to the Cloud Vision API.
  *
  * See the documentation at https://cloud.google.com/vision/reference/rest/v1/images/annotate
  */
 public class CloudVisionApi {
+
+    private static final String BASE_URL = "https://vision.googleapis.com";
+
+    private static Retrofit mRetrofit;
+
+    public static CloudVisionService getCloudVisionService() {
+        return getCloudVisionService(true);
+    }
+
+    public static CloudVisionService getCloudVisionService(boolean useLogging) {
+        // handle logging
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        if (useLogging) {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            clientBuilder.addInterceptor(interceptor);
+        }
+        OkHttpClient client = clientBuilder.build();
+
+        // handle custom return type
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(CloudVisionApi.ResponseList.class, new CloudVisionApi.ResponseDeserializer())
+                .create();
+
+        mRetrofit = new Retrofit.Builder()
+                .client(client)
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        return mRetrofit.create(CloudVisionService.class);
+    }
+
+    public static Retrofit getRetrofit() {
+        return mRetrofit;
+    }
 
     /**
      * Main request for all Vision related APIs.
@@ -109,7 +152,7 @@ public class CloudVisionApi {
     public static final String FEATURE_TYPE_SAFE_SEARCH_DETECTION  = "SAFE_SEARCH_DETECTION";
     public static final String FEATURE_TYPE_IMAGE_PROPERTIES       = "IMAGE_PROPERTIES";
 
-    private static final int DEFAULT_MAX_RESULTS = 5;
+    private static final int DEFAULT_MAX_RESULTS = 10;
 
     public static class Feature {
         public final String type;
