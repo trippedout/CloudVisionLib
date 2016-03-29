@@ -30,7 +30,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_image);
 
-        mCloudVisionService = CloudVisionApi.getCloudVisionService();
+        mCloudVisionService = CloudVisionApi.getCloudVisionService(false);
 
         setupViews();
     }

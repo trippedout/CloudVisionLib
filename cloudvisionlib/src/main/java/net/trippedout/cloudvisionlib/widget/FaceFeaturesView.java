@@ -23,6 +23,8 @@ public class FaceFeaturesView extends ImageView {
 
     private float mScaleX;
     private float mScaleY;
+    private float mOffsetX;
+    private float mOffsetY;
 
     private Paint mFacesBoundingPolyPaint;
     private Paint mFacesFdBoundingPolyPaint;
@@ -78,7 +80,10 @@ public class FaceFeaturesView extends ImageView {
         final int actW = Math.round(origW * mScaleX);
         final int actH = Math.round(origH * mScaleY);
 
-        Log.d("DBG", "["+origW+","+origH+"] -> ["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
+        mOffsetX = (getWidth() - actW) * 0.5f;
+        mOffsetY = (getHeight() - actH) * 0.5f;
+
+        Log.d("DBG", "["+mOffsetX+","+mOffsetY+"] -> ["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
     }
 
     public void setFaceAnnotations(List<FacesFeature.FaceAnnotations> faceAnnotations) {
@@ -86,8 +91,8 @@ public class FaceFeaturesView extends ImageView {
         mFaceFdBoundingBoxesPaths = new ArrayList<>();
 
         for(FacesFeature.FaceAnnotations face : faceAnnotations) {
-            mFaceBoundingBoxesPaths.add(face.boundingPoly.getPath(mScaleX, mScaleY));
-            mFaceFdBoundingBoxesPaths.add(face.fdBoundingPoly.getPath(mScaleX, mScaleY));
+            mFaceBoundingBoxesPaths.add(face.boundingPoly.getPath(mScaleX, mScaleY, mOffsetX, mOffsetY));
+            mFaceFdBoundingBoxesPaths.add(face.fdBoundingPoly.getPath(mScaleX, mScaleY, mOffsetX, mOffsetY));
         }
 
         invalidate();
