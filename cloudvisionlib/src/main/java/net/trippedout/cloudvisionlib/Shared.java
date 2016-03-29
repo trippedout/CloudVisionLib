@@ -62,19 +62,22 @@ public class Shared {
 
     public static class BoundingPoly {
         public final List<Vertex> vertices;
+        private Path mPath;
 
         public BoundingPoly(List<Vertex> vertices) {
             this.vertices = vertices;
         }
 
-        public Path getPath(float scaleX, float scaleY, float offsetX, float offsetY) {
-            Path path = new Path();
-            path.moveTo((vertices.get(0).x * scaleX) + offsetX, (vertices.get(0).y * scaleY) + offsetY);
-            for(int i = 1; i < vertices.size(); i++) {
-                path.lineTo((vertices.get(i).x * scaleX) + offsetX, (vertices.get(i).y * scaleY) + offsetY);
+        public Path getPath() {
+            if (mPath == null) {
+                mPath = new Path();
+                mPath.moveTo(vertices.get(0).x, vertices.get(0).y);
+                for (int i = 1; i < vertices.size(); i++) {
+                    mPath.lineTo(vertices.get(i).x, vertices.get(i).y);
+                }
+                mPath.close();
             }
-            path.close();
-            return path;
+            return mPath;
         }
 
         @Override
@@ -83,11 +86,19 @@ public class Shared {
                     "vertices=" + vertices +
                     '}';
         }
+
+        public void setScaleAndOffsets(float scaleX, float scaleY, float offsetX, float offsetY) {
+            for(int i = 0; i < vertices.size(); i++) {
+                Vertex v = vertices.get(i);
+                v.x = (v.x * scaleX) + offsetX;
+                v.y = (v.y * scaleY) + offsetY;
+            }
+        }
     }
 
     public static class Vertex {
-        public final float x;
-        public final float y;
+        public float x;
+        public float y;
 
         public Vertex(float x, float y) {
             this.x = x;
@@ -104,7 +115,7 @@ public class Shared {
     }
 
     public static class Position extends Vertex {
-        public final float z;
+        public float z;
 
         public Position(float x, float y, float z) {
             super(x, y);

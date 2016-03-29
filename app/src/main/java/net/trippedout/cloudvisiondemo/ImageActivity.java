@@ -30,13 +30,14 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_image);
 
-        mCloudVisionService = CloudVisionApi.getCloudVisionService(false);
+        mCloudVisionService = CloudVisionApi.getCloudVisionService();
 
         setupViews();
     }
 
     private void setupViews() {
         mFaceFeaturesView = (FaceFeaturesView) findViewById(R.id.image_view);
+//        mFaceFeaturesView.setShouldDrawFaceBoundingPoly(false);
 
         findViewById(R.id.btn_get_faces).setOnClickListener(this);
     }

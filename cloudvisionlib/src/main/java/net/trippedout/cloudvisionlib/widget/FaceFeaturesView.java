@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.Drawable;
+import android.hardware.camera2.params.Face;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.ImageView;
@@ -20,6 +21,7 @@ import java.util.List;
  * Simple view to draw the objects returned by the {@link net.trippedout.cloudvisionlib.CloudVisionApi#FEATURE_TYPE_FACE_DETECTION} features
  */
 public class FaceFeaturesView extends ImageView {
+    private static final String TAG = FaceFeaturesView.class.getSimpleName();
 
     private float mScaleX;
     private float mScaleY;
@@ -29,8 +31,11 @@ public class FaceFeaturesView extends ImageView {
     private Paint mFacesBoundingPolyPaint;
     private Paint mFacesFdBoundingPolyPaint;
 
-    private ArrayList<Path> mFaceBoundingBoxesPaths;
-    private ArrayList<Path> mFaceFdBoundingBoxesPaths;
+    private List<FacesFeature.FaceAnnotations> mFaceAnnotations;
+
+    private boolean mHasFaceAnnotations = false;
+    private boolean mShouldDrawFaceBoundingPoly = true;
+    private boolean mShouldDrawFaceFdBoundingPoly = true;
 
     public FaceFeaturesView(Context context) {
         super(context);
@@ -83,33 +88,45 @@ public class FaceFeaturesView extends ImageView {
         mOffsetX = (getWidth() - actW) * 0.5f;
         mOffsetY = (getHeight() - actH) * 0.5f;
 
-        Log.d("DBG", "["+mOffsetX+","+mOffsetY+"] -> ["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
+        Log.d(TAG, "offsets["+mOffsetX+","+mOffsetY+"] : actualWidth["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
     }
 
     public void setFaceAnnotations(List<FacesFeature.FaceAnnotations> faceAnnotations) {
-        mFaceBoundingBoxesPaths = new ArrayList<>();
-        mFaceFdBoundingBoxesPaths = new ArrayList<>();
+        mFaceAnnotations = faceAnnotations;
 
         for(FacesFeature.FaceAnnotations face : faceAnnotations) {
-            mFaceBoundingBoxesPaths.add(face.boundingPoly.getPath(mScaleX, mScaleY, mOffsetX, mOffsetY));
-            mFaceFdBoundingBoxesPaths.add(face.fdBoundingPoly.getPath(mScaleX, mScaleY, mOffsetX, mOffsetY));
+            face.setScaleAndOffsets(mScaleX, mScaleY, mOffsetX, mOffsetY);
+//            mFaceLandmarks.add(new LandmarkView(getContext(), face.landmarks, mScaleX, mScaleY, mOffsetX, mOffsetY));
         }
 
+        mHasFaceAnnotations = true;
         invalidate();
     }
+
+//    @Override
+//    public void draw(Canvas canvas) {
+//        super.draw(canvas);
+//
+//        if (!mHasFaceAnnotations) return;
+//
+//        for(FacesFeature.FaceAnnotations face: mFaceAnnotations) {
+//            landmarkView.draw(canvas);
+//        }
+//    }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(mFaceBoundingBoxesPaths != null) {
-            for(Path boundingFace : mFaceBoundingBoxesPaths) {
-                canvas.drawPath(boundingFace, mFacesBoundingPolyPaint);
-            }
+        // don't try to draw unless we have data
+        if (!mHasFaceAnnotations) return;
 
-            for(Path boundingFdFace : mFaceFdBoundingBoxesPaths) {
-                canvas.drawPath(boundingFdFace, mFacesFdBoundingPolyPaint);
-            }
+        for (FacesFeature.FaceAnnotations face : mFaceAnnotations) {
+            if (mShouldDrawFaceBoundingPoly)
+                canvas.drawPath(face.boundingPoly.getPath(), mFacesBoundingPolyPaint);
+
+            if (mShouldDrawFaceFdBoundingPoly)
+                canvas.drawPath(face.fdBoundingPoly.getPath(),mFacesFdBoundingPolyPaint);
         }
     }
 
@@ -121,4 +138,11 @@ public class FaceFeaturesView extends ImageView {
         return mScaleY;
     }
 
+    public void setShouldDrawFaceBoundingPoly(boolean shouldDraw) {
+        this.mShouldDrawFaceBoundingPoly = shouldDraw;
+    }
+
+    public void setShouldDrawFaceFdBoundingPoly(boolean shouldDraw) {
+        this.mShouldDrawFaceFdBoundingPoly = shouldDraw;
+    }
 }

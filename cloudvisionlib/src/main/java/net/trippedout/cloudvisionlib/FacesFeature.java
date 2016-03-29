@@ -65,6 +65,19 @@ public class FacesFeature {
                     ", headwearLikelihood='" + headwearLikelihood + '\'' +
                     '}';
         }
+
+        /**
+         * Affects all children by a specific scale and offset, to help draw into ImageViews that
+         * use different scale types, like {@link net.trippedout.cloudvisionlib.widget.FaceFeaturesView}
+         */
+        public void setScaleAndOffsets(float scaleX, float scaleY, float offsetX, float offsetY) {
+            boundingPoly.setScaleAndOffsets(scaleX, scaleY, offsetX, offsetY);
+            fdBoundingPoly.setScaleAndOffsets(scaleX, scaleY, offsetX, offsetY);
+
+            for(Landmark landmark : landmarks) {
+                landmark.setScaleAndOffsets(scaleX, scaleY, offsetX,offsetY);
+            }
+        }
     }
 
 
@@ -83,6 +96,12 @@ public class FacesFeature {
                     "type='" + type + '\'' +
                     ", position=" + position +
                     '}';
+        }
+
+        public void setScaleAndOffsets(float scaleX, float scaleY, float offsetX, float offsetY) {
+            position.x = (position.x * scaleX) + offsetX;
+            position.y = (position.y * scaleY) + offsetY;
+            //TODO determine how to affect z property
         }
     }
 }
