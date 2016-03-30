@@ -1,5 +1,9 @@
 package net.trippedout.cloudvisionlib;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+
 import java.util.List;
 
 /**
@@ -78,12 +82,19 @@ public class FacesFeature {
                 landmark.setScaleAndOffsets(scaleX, scaleY, offsetX,offsetY);
             }
         }
-    }
 
+        public void drawLandmarks(Canvas canvas) {
+            for(Landmark landmark : landmarks) {
+                landmark.onDraw(canvas);
+            }
+        }
+    }
 
     public static class Landmark {
         public final String type;
         public final Shared.Position position;
+
+        private Paint defaultPaint;
 
         public Landmark(String type, Shared.Position position) {
             this.type = type;
@@ -102,6 +113,15 @@ public class FacesFeature {
             position.x = (position.x * scaleX) + offsetX;
             position.y = (position.y * scaleY) + offsetY;
             //TODO determine how to affect z property
+        }
+
+        public void onDraw(Canvas canvas) {
+            if (defaultPaint == null) {
+                defaultPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                defaultPaint.setColor(Color.RED);
+            }
+
+            canvas.drawCircle(position.x, position.y, 4, defaultPaint);
         }
     }
 }

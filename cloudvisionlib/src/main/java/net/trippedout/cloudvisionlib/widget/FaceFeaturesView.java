@@ -36,6 +36,7 @@ public class FaceFeaturesView extends ImageView {
     private boolean mHasFaceAnnotations = false;
     private boolean mShouldDrawFaceBoundingPoly = true;
     private boolean mShouldDrawFaceFdBoundingPoly = true;
+    private boolean mShouldDrawFaceLandmarks = true;
 
     public FaceFeaturesView(Context context) {
         super(context);
@@ -103,17 +104,6 @@ public class FaceFeaturesView extends ImageView {
         invalidate();
     }
 
-//    @Override
-//    public void draw(Canvas canvas) {
-//        super.draw(canvas);
-//
-//        if (!mHasFaceAnnotations) return;
-//
-//        for(FacesFeature.FaceAnnotations face: mFaceAnnotations) {
-//            landmarkView.draw(canvas);
-//        }
-//    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -127,6 +117,9 @@ public class FaceFeaturesView extends ImageView {
 
             if (mShouldDrawFaceFdBoundingPoly)
                 canvas.drawPath(face.fdBoundingPoly.getPath(),mFacesFdBoundingPolyPaint);
+
+            if (mShouldDrawFaceLandmarks)
+                face.drawLandmarks(canvas);
         }
     }
 
