@@ -12,13 +12,16 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.ImageView;
 
+import net.trippedout.cloudvisionlib.CloudVisionApi;
 import net.trippedout.cloudvisionlib.FacesFeature;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simple view to draw the objects returned by the {@link net.trippedout.cloudvisionlib.CloudVisionApi#FEATURE_TYPE_FACE_DETECTION} features
+ * Simple view to draw the objects returned by the {@link net.trippedout.cloudvisionlib.CloudVisionApi#FEATURE_TYPE_FACE_DETECTION} features.
+ *
+ * Scale and offset will trickle down to all of our annotations, so we can align the features properly against the ImageView.
  */
 public class FaceFeaturesView extends ImageView {
     private static final String TAG = FaceFeaturesView.class.getSimpleName();
@@ -89,15 +92,21 @@ public class FaceFeaturesView extends ImageView {
         mOffsetX = (getWidth() - actW) * 0.5f;
         mOffsetY = (getHeight() - actH) * 0.5f;
 
-        Log.d(TAG, "offsets["+mOffsetX+","+mOffsetY+"] : actualWidth["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
+        Log.i(TAG, "offsets["+mOffsetX+","+mOffsetY+"] : actualWidth["+actW+","+actH+"] & scales: x="+mScaleX+" y="+mScaleY);
     }
 
+    /**
+     * Set the annotations for this view,
+     * returned from our {@link net.trippedout.cloudvisionlib.CloudVisionService#getAnnotations(String, CloudVisionApi.VisionRequest)}
+     *
+     * Once set, the view will automatically set the proper scaling on all of the returned values based
+     * on the measurements taken in {@link #onMeasure(int, int)}.
+     */
     public void setFaceAnnotations(List<FacesFeature.FaceAnnotations> faceAnnotations) {
         mFaceAnnotations = faceAnnotations;
 
         for(FacesFeature.FaceAnnotations face : faceAnnotations) {
             face.setScaleAndOffsets(mScaleX, mScaleY, mOffsetX, mOffsetY);
-//            mFaceLandmarks.add(new LandmarkView(getContext(), face.landmarks, mScaleX, mScaleY, mOffsetX, mOffsetY));
         }
 
         mHasFaceAnnotations = true;
@@ -131,11 +140,24 @@ public class FaceFeaturesView extends ImageView {
         return mScaleY;
     }
 
+    /**
+     * Whether or not we should draw the outer face bounding box.
+     */
     public void setShouldDrawFaceBoundingPoly(boolean shouldDraw) {
         this.mShouldDrawFaceBoundingPoly = shouldDraw;
     }
 
+    /**
+     * Whether or not we should draw the inner face bounding box.
+     */
     public void setShouldDrawFaceFdBoundingPoly(boolean shouldDraw) {
         this.mShouldDrawFaceFdBoundingPoly = shouldDraw;
+    }
+
+    /**
+     * Whether or not we should draw the facial landmarks, such as eye and mouth positions.
+     */
+    public void setShouldDrawLandmarks(boolean shouldDraw) {
+        this.mShouldDrawFaceLandmarks = shouldDraw;
     }
 }
