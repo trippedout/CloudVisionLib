@@ -16,7 +16,7 @@ plugins {
 
 apply plugin: 'com.android.library'
 
-version "0.1"
+version "0.1.0"
 
 android {
     compileSdkVersion 23
@@ -28,6 +28,11 @@ android {
         versionCode 1
         versionName version
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
