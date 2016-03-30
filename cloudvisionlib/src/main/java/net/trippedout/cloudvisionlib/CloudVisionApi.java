@@ -33,36 +33,65 @@ public class CloudVisionApi {
 
     private static Retrofit mRetrofit;
 
+    private static CloudVisionService mCloudVisionService;
+
+    /**
+     * Gets the {@link CloudVisionService} with logging enabled by default.
+     */
     public static CloudVisionService getCloudVisionService() {
         return getCloudVisionService(true);
     }
 
+    /**
+     * Gets the {@link CloudVisionService} used to make calls to the Cloud Vision API.
+     *
+     * @param useLogging whether or not to print out all of OkHttp's calls
+     * @return {@link CloudVisionService} instance
+     */
     public static CloudVisionService getCloudVisionService(boolean useLogging) {
-        // handle logging
-        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-        if (useLogging) {
-            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            clientBuilder.addInterceptor(interceptor);
+        if (mCloudVisionService == null) {
+            OkHttpClient client = null;
+
+            if (useLogging) {
+                HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+                interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                client = new OkHttpClient.Builder().addInterceptor(interceptor).build();
+            }
+
+            mRetrofit = getRetrofit(client);
+            mCloudVisionService = mRetrofit.create(CloudVisionService.class);
         }
-        OkHttpClient client = clientBuilder.build();
 
-        // handle custom return type
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(CloudVisionApi.ResponseList.class, new CloudVisionApi.ResponseDeserializer())
-                .create();
+        return mCloudVisionService;
+    }
 
-        mRetrofit = new Retrofit.Builder()
-                .client(client)
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
+    protected static Retrofit getRetrofit(OkHttpClient client) {
+        if (mRetrofit == null) {
+            // handle custom return type
+            Gson gson = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .registerTypeAdapter(CloudVisionApi.ResponseList.class, new CloudVisionApi.ResponseDeserializer())
+                    .create();
 
-        return mRetrofit.create(CloudVisionService.class);
+            // add client if needed
+            Retrofit.Builder builder = new Retrofit.Builder();
+            if (client != null)
+                builder.client(client);
+
+            mRetrofit = builder
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .baseUrl(BASE_URL)
+                    .build();
+        }
+
+        return mRetrofit;
     }
 
     public static Retrofit getRetrofit() {
+        if (mRetrofit == null) {
+            throw new NullPointerException("Retrofit is null. Please call CloudVisionApi.getCloudVisionService() first to initialize everything.");
+        }
+
         return mRetrofit;
     }
 
