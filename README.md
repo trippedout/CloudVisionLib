@@ -2,7 +2,7 @@
 
 This is a simple wrapper for Google's new Cloud Vision API. 
 
-It uses the latest version of retrofit and the example app was built using the latest
+It uses the latest version of [Retrofit2](https://github.com/square/retrofit/) and the example app was built using the latest
 preview of Android Studio (2.1 preview 4 at time of writing, with alpha gradle pluging) so please
 be aware of that if you run into compiling issues.
 
