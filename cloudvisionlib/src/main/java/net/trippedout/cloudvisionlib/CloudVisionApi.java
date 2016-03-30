@@ -264,7 +264,9 @@ public class CloudVisionApi {
         }
 
         /**
-         * Gets the response for the specified feature type.
+         * Gets the response for the specified feature type. Pass in a
+         * feature like {@link #FEATURE_TYPE_FACE_DETECTION} to see results.
+         *
          *
          * @return a {@link Response} you can cast to the proper type, or null if it doesn't exist.
          */
@@ -386,6 +388,9 @@ public class CloudVisionApi {
         }
     }
 
+    /**
+     * safeSearchAnnotations as part of a response from {@link #FEATURE_TYPE_SAFE_SEARCH_DETECTION}
+     */
     public static class SafeSearchResponse extends Response {
         public final SafeSearchAnnotation safeSearchAnnotation;
 
