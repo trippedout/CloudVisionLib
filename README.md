@@ -1,6 +1,6 @@
 #Cloud Vision Lib
 
-This is a simple wrapper for Google's new Cloud Vision API. 
+This is a simple wrapper for [Google's new Cloud Vision API](https://cloud.google.com/vision/). 
 
 It uses the latest version of [Retrofit2](https://github.com/square/retrofit/) and the example app was built using the latest
 preview of Android Studio (2.1 preview 4 at time of writing, with alpha gradle pluging) so please
@@ -18,7 +18,8 @@ to setup a Cloud Storage bucket for use with an Android app.
 
 For using the library on its own, you can clone this repo and include the module, or, via `jcenter()`
 you can add it to your `build.gradle dependencies {}`:
-
+    
+    // note: still awaiting sync to jcenter as of 3/30/2016 - give it a few hours
     compile 'net.trippedout:cloudvisionlib:0.1.0'
     
 Once imported, you can start sending ImageRequests to the service.
