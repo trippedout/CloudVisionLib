@@ -280,7 +280,7 @@ public class CloudVisionApi {
                     mResponseMap.put(FEATURE_TYPE_IMAGE_PROPERTIES, response);
                 if (response instanceof FaceDetectResponse)
                     mResponseMap.put(FEATURE_TYPE_FACE_DETECTION, response);
-                if (response instanceof LabelResponse)
+                if (response instanceof SafeSearchResponse)
                     mResponseMap.put(FEATURE_TYPE_SAFE_SEARCH_DETECTION, response);
             }
         }
